@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Profile Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+</head>
+<body class="bg-gray-100">
+    <div class="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-md mt-10">
+        <h1 class="text-2xl font-bold mb-4 text-center">GitHub Profile Generator</h1>
+        <form id="profileForm" class="space-y-4">
+            <div>
+                <label class="block font-medium">GitHub Username:</label>
+                <input type="text" name="username" class="w-full p-2 border border-gray-300 rounded" required>
+            </div>
+            <div>
+                <label class="block font-medium">Profile Type:</label>
+                <select name="profile_type" class="w-full p-2 border border-gray-300 rounded">
+                    <option value="developer">Developer</option>
+                    <option value="coder">Coder</option>
+                    <option value="designer">Designer</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-medium">Greeting Message:</label>
+                <input type="text" name="greeting" class="w-full p-2 border border-gray-300 rounded" required>
+            </div>
+            <div>
+                <label class="block font-medium">Typing Text (comma-separated):</label>
+                <input type="text" name="typing_text" class="w-full p-2 border border-gray-300 rounded" required>
+            </div>
+            <div>
+                <label class="block font-medium">Theme:</label>
+                <select name="theme" class="w-full p-2 border border-gray-300 rounded">
+                    <option value="radical">Radical</option>
+                    <option value="dark">Dark</option>
+                    <option value="light">Light</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-medium">Show Contribution Snake:</label>
+                <input type="checkbox" name="show_snake" value="true">
+            </div>
+            <div>
+                <label class="block font-medium">Show Activity Graph:</label>
+                <input type="checkbox" name="show_activity_graph" value="true">
+            </div>
+            <div>
+                <label class="block font-medium">Show Trophies:</label>
+                <input type="checkbox" name="show_trophies" value="true">
+            </div>
+            <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded">Generate README</button>
+        </form>
+        <p id="message" class="mt-4 text-center text-green-600"></p>
+    </div>
+
+    <script>
+        document.getElementById("profileForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch("/generate", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("message").textContent = data.message;
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    </script>
+</body>
+</html>
