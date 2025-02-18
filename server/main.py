@@ -1,12 +1,12 @@
 from flask import Flask, render_template, request, jsonify
 import yaml
-from github_profile_generator import GitHubProfileGenerator  # Import the class from your script
+from github_profile_generator import GitHubProfileGenerator 
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('indexold.html')
 
 @app.route('/generate', methods=['POST'])
 def generate_readme():
@@ -30,7 +30,7 @@ def generate_readme():
     generator = GitHubProfileGenerator(username=data.get('username', 'user'))
     readme_content = generator.generate_profile(config)
     
-    with open("README.md", "w", encoding="utf-8") as f:
+    with open("./results/README.md", "w", encoding="utf-8") as f:
         f.write(readme_content)
     
     return jsonify({"message": "README.md generated successfully!"})

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Profile README Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.5/ace.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"></script>
+    <style>
+        .preview-pane {
+            background: #0d1117;
+            color: #c9d1d9;
+            padding: 2rem;
+            border-radius: 0.5rem;
+        }
+        
+        .editor-section {
+            height: 300px;
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+        }
+
+        .tech-badge {
+            transition: all 0.3s ease;
+        }
+        
+        .tech-badge:hover {
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-4">GitHub Profile README Generator</h1>
+            <p class="text-gray-400">Create an awesome GitHub profile in minutes</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Configuration Panel -->
+            <div class="space-y-6">
+                <!-- Basic Info -->
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">Basic Information</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-300 mb-2">GitHub Username</label>
+                            <input type="text" id="username" class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2">
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 mb-2">Profile Type</label>
+                            <select id="profile-type" class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2">
+                                <option value="developer">Developer</option>
+                                <option value="coder">Coder</option>
+                                <option value="designer">Designer</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tech Stack -->
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">Tech Stack</h2>
+                    <div class="space-y-4">
+                        <div id="tech-categories">
+                            <!-- Tech categories will be dynamically added here -->
+                        </div>
+                        <button onclick="addTechCategory()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                            Add Category
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Customization -->
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">Customization</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-300 mb-2">Theme</label>
+                            <select id="theme" class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2">
+                                <option value="radical">Radical</option>
+                                <option value="dark">Dark</option>
+                                <option value="merko">Merko</option>
+                                <option value="tokyonight">Tokyo Night</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-300 mb-2">Typing Text (comma-separated)</label>
+                            <input type="text" id="typing-text" class="w-full bg-gray-700 border border-gray-600 rounded px-4 py-2"
+                                   placeholder="Passionate Developer, Open Source Enthusiast">
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="show-snake" checked class="form-checkbox">
+                                <span class="ml-2">Show Snake Animation</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="show-trophies" checked class="form-checkbox">
+                                <span class="ml-2">Show Trophies</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Links -->
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h2 class="text-xl font-semibold mb-4">Social Links</h2>
+                    <div id="social-links" class="space-y-4">
+                        <!-- Social links will be dynamically added here -->
+                    </div>
+                    <button onclick="addSocialLink()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded mt-4">
+                        Add Social Link
+                    </button>
+                </div>
+
+                <!-- Generate Button -->
+                <button onclick="generateReadme()" class="w-full bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg font-semibold">
+                    Generate README
+                </button>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold">Preview</h2>
+                    <button onclick="copyToClipboard()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded">
+                        Copy Markdown
+                    </button>
+                </div>
+                <div id="preview" class="preview-pane overflow-auto h-[800px]"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize tech categories
+        const defaultCategories = {
+            'Languages': ['JavaScript', 'Python', 'Java'],
+            'Frontend': ['React', 'Vue', 'Angular'],
+            'Backend': ['Node.js', 'Django', 'Flask'],
+            'Database': ['MongoDB', 'PostgreSQL', 'MySQL']
+        };
+
+        function initializeTechCategories() {
+            const container = document.getElementById('tech-categories');
+            Object.entries(defaultCategories).forEach(([category, techs]) => {
+                addTechCategory(category, techs);
+            });
+        }
+
+        function addTechCategory(categoryName = '', technologies = []) {
+            const container = document.getElementById('tech-categories');
+            const categoryDiv = document.createElement('div');
+            categoryDiv.className = 'mb-4';
+            categoryDiv.innerHTML = `
+                <div class="flex items-center space-x-2 mb-2">
+                    <input type="text" placeholder="Category Name" value="${categoryName}"
+                           class="bg-gray-700 border border-gray-600 rounded px-3 py-1">
+                    <button onclick="removeTechCategory(this)" class="text-red-500 hover:text-red-400">×</button>
+                </div>
+                <input type="text" placeholder="Technologies (comma-separated)" value="${technologies.join(', ')}"
+                       class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-1">
+            `;
+            container.appendChild(categoryDiv);
+        }
+
+        function removeTechCategory(button) {
+            button.closest('div.mb-4').remove();
+        }
+
+        // Social links handling
+        function addSocialLink() {
+            const container = document.getElementById('social-links');
+            const linkDiv = document.createElement('div');
+            linkDiv.className = 'flex items-center space-x-2';
+            linkDiv.innerHTML = `
+                <input type="text" placeholder="Platform" class="bg-gray-700 border border-gray-600 rounded px-3 py-1">
+                <input type="text" placeholder="URL" class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-1">
+                <button onclick="removeSocialLink(this)" class="text-red-500 hover:text-red-400">×</button>
+            `;
+            container.appendChild(linkDiv);
+        }
+
+        function removeSocialLink(button) {
+            button.closest('div.flex').remove();
+        }
+
+        // README generation
+        async function generateReadme() {
+            const username = document.getElementById('username').value;
+            if (!username) {
+                alert('Please enter a GitHub username');
+                return;
+            }
+
+            const config = {
+                profile_type: document.getElementById('profile-type').value,
+                theme: document.getElementById('theme').value,
+                typing_text: document.getElementById('typing-text').value.split(',').map(t => t.trim()),
+                show_snake: document.getElementById('show-snake').checked,
+                show_trophies: document.getElementById('show-trophies').checked,
+                tech_stacks: getTechStacks(),
+                social_links: getSocialLinks()
+            };
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username,
+                        config
+                    })
+                });
+
+                const data = await response.json();
+                if (data.status === 'success') {
+                    document.getElementById('preview').innerHTML = marked.parse(data.readme);
+                } else {
+                    alert('Error generating README: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error generating README: ' + error.message);
+            }
+        }
+
+        function getTechStacks() {
+            const techStacks = {};
+            document.querySelectorAll('#tech-categories > div').forEach(category => {
+                const inputs = category.querySelectorAll('input');
+                const categoryName = inputs[0].value;
+                const technologies = inputs[1].value.split(',').map(t => t.trim()).filter(t => t);
+                if (categoryName && technologies.length) {
+                    techStacks[categoryName] = technologies;
+                }
+            });
+            return techStacks;
+        }
+
+        function getSocialLinks() {
+            const socialLinks = {};
+            document.querySelectorAll('#social-links > div').forEach(link => {
+                const inputs = link.querySelectorAll('input');
+                const platform = inputs[0].value;
+                const url = inputs[1].value;
+                if (platform && url) {
+                    socialLinks[platform] = url;
+                }
+            });
+            return socialLinks;
+        }
+
+        function copyToClipboard() {
+            const preview = document.getElementById('preview');
+            const textarea = document.createElement('textarea');
+            textarea.value = preview.innerText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('README copied to clipboard!');
+        }
+
+        // Initialize the page
+        initializeTechCategories();
+        addSocialLink(); // Add one social link by default
+    </script>
+</body>
+</html>

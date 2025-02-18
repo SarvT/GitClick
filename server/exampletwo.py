@@ -44,6 +44,59 @@ class GitHubProfileGenerator:
 </details>
 """
 
+    def generate_tech_section(self, tech_stacks: Dict[str, List[str]]) -> str:
+        """Generate technology stack section with categorized badges"""
+        sections = []
+        for category, techs in tech_stacks.items():
+            badges = []
+            for tech in techs:
+                tech_slug = tech.lower().replace(' ', '-')
+                badge = f"![{tech}](https://img.shields.io/badge/{tech_slug}-black?style=for-the-badge&logo={tech_slug}&logoColor=white)"
+                badges.append(badge)
+            
+            sections.append(f"""
+<details>
+  <summary>{category}</summary>
+  <div align="center">
+    {' '.join(badges)}
+  </div>
+</details>
+""")
+        return '\n'.join(sections)
+
+    def generate_activity_graph(self) -> str:
+        """Generate GitHub activity graph"""
+        return f"""
+<details>
+  <summary>📈 Contribution Graph</summary>
+  <img src="https://github-readme-activity-graph.vercel.app/graph?username={self.username}&theme=github-compact" alt="Contribution Graph" />
+</details>
+"""
+
+    def generate_trophy_section(self) -> str:
+        """Generate GitHub trophy section"""
+        return f"""
+<details>
+  <summary>🏆 GitHub Trophies</summary>
+  <div align="center">
+    <img src="https://github-profile-trophy.vercel.app/?username={self.username}&theme={self.theme}&column=4&margin-w=15&margin-h=15" alt="GitHub Trophies" />
+  </div>
+</details>
+"""
+
+    def generate_spotify_section(self, spotify_username: Optional[str] = None) -> str:
+        """Generate Spotify Now Playing section"""
+        if spotify_username:
+            return f"""
+<details>
+  <summary>🎵 Now Playing</summary>
+  <div align="center">
+    <img src="https://spotify-github-profile.vercel.app/api/view?uid={spotify_username}&cover_image=true&theme=novatorem" alt="Spotify Now Playing" />
+  </div>
+</details>
+"""
+        return ""
+
     def generate_profile(self, config: Dict) -> str:
         """Generate the complete GitHub profile README"""
         intro_gifs = {
@@ -61,9 +114,22 @@ class GitHubProfileGenerator:
     {config.get('greeting', f"Hi 👋, I'm {self.username}")}
 </h1>
 
+<h3 align="center">
+    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=2196F3&center=true&vCenter=true&width=435&lines={';'.join(config.get('typing_text', ['Passionate+Developer', 'Open+Source+Enthusiast', 'Always+Learning']))}" alt="Typing SVG" />
+</h3>
+
 {self.generate_snake_animation() if config.get('show_snake', True) else ''}
 
+### 🛠️ Technology Stack
+{self.generate_tech_section(config['tech_stacks'])}
+
 {self.generate_metrics_cards()}
+
+{self.generate_activity_graph() if config.get('show_activity_graph', True) else ''}
+
+{self.generate_trophy_section() if config.get('show_trophies', True) else ''}
+
+{self.generate_spotify_section(config.get('spotify_username')) if config.get('spotify_username') else ''}
 
 ### 🌱 Current Focus
 ```yaml
@@ -74,9 +140,15 @@ class GitHubProfileGenerator:
 }), default_flow_style=False)}
 ```
 
-### 💌 Connect With Me
+### 📫 Connect With Me
 <div align="center">
 {self._generate_social_links(config.get('social_links', {}))}
+</div>
+
+{self._generate_custom_sections(config.get('custom_sections', {}))}
+
+<div align="center">
+    <img src="https://komarev.com/ghpvc/?username={self.username}&label=Profile%20views&color=0e75b6&style=flat" alt="Profile views" />
 </div>
 """
         return readme
@@ -88,6 +160,9 @@ class GitHubProfileGenerator:
             badges.append(f'<a href="{url}"><img src="https://img.shields.io/badge/{platform}-black?style=for-the-badge&logo={platform.lower()}&logoColor=white" alt="{platform}"/></a>')
         return '\n'.join(badges)
 
+    def _generate_custom_sections(self, custom_sections: Dict[str, str]) -> str:
+        """Generate custom markdown sections"""
+        return '\n\n'.join([f"### {title}\n{content}" for title, content in custom_sections.items()])
 
 def save_readme(content: str, filename: str = "README.md") -> None:
     """Save the generated README to a file"""
@@ -96,10 +171,23 @@ def save_readme(content: str, filename: str = "README.md") -> None:
 
 # Example usage
 if __name__ == "__main__":
+    # Example configuration
     username = input("Enter your GitHub username: ")
     config = {
-        'profile_type': 'developer',
+        'profile_type': 'developer',  # 'coder', 'developer', or 'designer'
         'greeting': "Hi 👋, I'm John Doe",
+        'typing_text': [
+            'Full+Stack+Developer',
+            'Open+Source+Enthusiast',
+            'Problem+Solver'
+        ],
+        'tech_stacks': {
+            '💻 Languages': ['Python', 'JavaScript', 'TypeScript', 'Java'],
+            '🌐 Frontend': ['React', 'Vue', 'Angular', 'Tailwind'],
+            '⚙️ Backend': ['Node.js', 'Django', 'FastAPI', 'Spring'],
+            '🛢️ Database': ['MongoDB', 'PostgreSQL', 'Redis'],
+            '🔧 Tools': ['Docker', 'Git', 'AWS', 'Linux']
+        },
         'current_focus': {
             'learning': ['Rust', 'Web3', 'Machine Learning'],
             'working_on': ['Personal Blog', 'Open Source Projects'],
@@ -110,8 +198,18 @@ if __name__ == "__main__":
             'Twitter': 'https://twitter.com/username',
             'Dev.to': 'https://dev.to/username'
         },
+        'spotify_username': 'your_spotify_username',  # Optional
         'show_snake': True,
-        'theme': 'radical'
+        'show_activity_graph': True,
+        'show_trophies': True,
+        'theme': 'radical',  # GitHub theme for stats cards
+        'custom_sections': {
+            '📚 Latest Blog Posts': """
+- [How to Build a REST API with FastAPI](https://example.com)
+- [Understanding Docker Compose](https://example.com)
+- [Advanced Git Workflows](https://example.com)
+"""
+        }
     }
 
     generator = GitHubProfileGenerator(username=username)
