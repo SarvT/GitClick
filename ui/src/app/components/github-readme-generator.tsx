@@ -85,6 +85,7 @@ export default function GitHubReadmeGenerator() {
   const handleConfigChange = (e:React.ChangeEvent<HTMLTextAreaElement>) => {
     try {
       const newConfig = yaml.load(e.target.value)
+      if (typeof newConfig === "object" && newConfig !== null) 
       setConfig({ ...defaultConfig, ...newConfig })
     } catch (error) {
       console.error("Invalid YAML:", error)
